@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <div class="row" style="margin-bottom:0.7rem;">
+        <div class="row">
+            <div class="avatar">{{ post.author.username|first|upper }}</div>
+            <div>
+                <strong>{{ post.author.username }}</strong>
+                <div class="muted small">{{ post.created_at|date:"M d, Y" }}</div>
+            </div>
+        </div>
+    </div>
+    <p>{{ post.content }}</p>
+    {% if post.image %}<img class="post-image" src="{{ post.image.url }}" alt="post">{% endif %}
+    <div class="muted" style="margin-top:0.6rem;">
+        <span class="pill">{{ post.like_count }} likes</span>
+        <span class="pill">{{ post.comment_count }} comments</span>
+    </div>
+    {% if user.is_authenticated %}
+    <div class="row" style="margin-top:0.7rem;">
+        <a class="btn secondary" href="{% url 'toggle_like' post.id %}">{% if user_has_liked %}Unlike{% else %}Like{% endif %}</a>
+    </div>
+    {% endif %}
+    <div style="margin-top:1rem;">
+        <h3>Comments</h3>
+        {% for comment in post.comments.all %}
+        <div style="padding:0.6rem 0; border-top:1px solid #f1f5f9;">
+            <strong>{{ comment.author.username }}</strong>
+            <div class="muted small">{{ comment.content }}</div>
+        </div>
+        {% empty %}
+        <p class="muted">No comments yet.</p>
+        {% endfor %}
+    </div>
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'create_comment' post.id %}" style="margin-top:0.7rem;">
+        {% csrf_token %}
+        {{ comment_form.as_p }}
+        <button class="btn" type="submit">Comment</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

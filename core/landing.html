@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card" style="text-align:center; padding:2rem 1.2rem;">
+    <h1 style="margin-top:0;">Welcome to Mini Connect</h1>
+    <p class="muted">Share moments, follow friends, and discover new communities.</p>
+    <a class="btn" href="{% url 'register' %}">Get Started</a>
+    <p style="margin-top:1rem;"><a href="{% url 'login' %}">Already have an account? Login</a></p>
+</div>
+{% endblock %}

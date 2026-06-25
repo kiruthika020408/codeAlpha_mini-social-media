@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <h3>Following</h3>
+    {% for user in following %}
+    <div class="friend-item">
+        <div class="row">
+            <div class="avatar">{{ user.username|first|upper }}</div>
+            <div>
+                <strong>{{ user.username }}</strong>
+                <div class="muted small">{{ user.first_name }} {{ user.last_name }}</div>
+            </div>
+        </div>
+        <a class="btn secondary" href="{% url 'profile' user.username %}">View</a>
+    </div>
+    {% empty %}
+    <p class="muted">You are not following anyone yet.</p>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h3>Followers</h3>
+    {% for user in followers %}
+    <div class="friend-item">
+        <div class="row">
+            <div class="avatar">{{ user.username|first|upper }}</div>
+            <div>
+                <strong>{{ user.username }}</strong>
+                <div class="muted small">{{ user.first_name }} {{ user.last_name }}</div>
+            </div>
+        </div>
+        <a class="btn secondary" href="{% url 'profile' user.username %}">View</a>
+    </div>
+    {% empty %}
+    <p class="muted">No followers yet.</p>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h3>Suggestions</h3>
+    {% for user in suggested_users %}
+    <div class="friend-item">
+        <div class="row">
+            <div class="avatar">{{ user.username|first|upper }}</div>
+            <div>
+                <strong>{{ user.username }}</strong>
+                <div class="muted small">{{ user.first_name }} {{ user.last_name }}</div>
+            </div>
+        </div>
+        <a class="btn secondary" href="{% url 'profile' user.username %}">Follow</a>
+    </div>
+    {% empty %}
+    <p class="muted">No suggestions available.</p>
+    {% endfor %}
+</div>
+{% endblock %}

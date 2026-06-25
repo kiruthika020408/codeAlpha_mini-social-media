@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <div class="profile-hero">
+        {% if profile_obj.profile_image %}
+        <img src="{{ profile_obj.profile_image.url }}" alt="Profile" style="width:72px; height:72px; border-radius:50%; object-fit:cover;">
+        {% else %}
+        <div class="avatar" style="width:64px; height:64px; font-size:1.25rem;">{{ profile_user.username|first|upper }}</div>
+        {% endif %}
+        <div style="flex:1;">
+            <div class="row" style="justify-content:flex-start; margin-bottom:0.35rem;">
+                <h2 style="margin:0;">{{ profile_user.username }}</h2>
+                {% if user.is_authenticated and user != profile_user %}
+                <a class="btn" href="{% url 'toggle_follow' profile_user.username %}" style="padding:0.4rem 0.8rem; font-size:0.85rem;">{% if is_following %}Unfollow{% else %}Follow{% endif %}</a>
+                {% endif %}
+            </div>
+            <p class="muted" style="margin:0.25rem 0;">{{ profile_user.first_name }} {{ profile_user.last_name }}</p>
+            <div class="stats">
+                <div><strong>{{ posts.count }}</strong><div class="muted small">posts</div></div>
+                <div><strong>{{ follower_count }}</strong><div class="muted small">followers</div></div>
+                <div><strong>{{ following_count }}</strong><div class="muted small">following</div></div>
+            </div>
+        </div>
+    </div>
+    <p class="muted">Bio: {{ profile_obj.bio|default:"Add a bio to tell people about yourself." }}</p>
+    <p class="muted">About: {{ profile_obj.about|default:"Tell people more about you here." }}</p>
+    {% if user.is_authenticated and user == profile_user %}
+    <a class="btn secondary" href="{% url 'edit_profile' profile_user.username %}">Change DP & Bio</a>
+    {% elif user.is_authenticated and user != profile_user %}
+    <a class="btn" href="{% url 'toggle_follow' profile_user.username %}">{% if is_following %}Unfollow{% else %}Follow{% endif %}</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3 style="margin-top:0;">Followers</h3>
+    {% for user in followers %}
+    <div class="friend-item">
+        <div class="row">
+            <div class="avatar">{{ user.username|first|upper }}</div>
+            <div>
+                <strong>{{ user.username }}</strong>
+                <div class="muted small">{{ user.first_name }} {{ user.last_name }}</div>
+            </div>
+        </div>
+        <a class="btn secondary" href="{% url 'profile' user.username %}">View</a>
+    </div>
+    {% empty %}
+    <p class="muted">No followers yet.</p>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h3 style="margin-top:0;">Following</h3>
+    {% for user in following %}
+    <div class="friend-item">
+        <div class="row">
+            <div class="avatar">{{ user.username|first|upper }}</div>
+            <div>
+                <strong>{{ user.username }}</strong>
+                <div class="muted small">{{ user.first_name }} {{ user.last_name }}</div>
+            </div>
+        </div>
+        <a class="btn secondary" href="{% url 'profile' user.username %}">View</a>
+    </div>
+    {% empty %}
+    <p class="muted">Not following anyone yet.</p>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h3 style="margin-top:0;">Suggested friends</h3>
+    {% for user in suggested_users %}
+    <div class="friend-item" style="padding:0.6rem 0; border-bottom:1px solid #f1f5f9;">
+        <div class="row" style="flex:1; align-items:center;">
+            <div class="avatar">{{ user.username|first|upper }}</div>
+            <div style="flex:1; margin-left:0.6rem;">
+                <div class="row" style="justify-content:space-between; gap:0.5rem; align-items:center;">
+                    <div>
+                        <strong>{{ user.username }}</strong>
+                        <div class="muted small">{{ user.first_name }} {{ user.last_name }}</div>
+                    </div>
+                    {% if request.user.is_authenticated and user != request.user %}
+                    <a class="btn" href="{% url 'toggle_follow' user.username %}" style="padding:0.4rem 0.75rem; font-size:0.85rem; font-weight:700; background:#16a34a; border:1px solid #16a34a;">{% if user in request.user.following.all %}Unfollow{% else %}Follow{% endif %}</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="muted">No suggestions.</p>
+    {% endfor %}
+</div>
+
+<div class="stack">
+    {% for post in posts %}
+    <div class="card">
+        <div class="row" style="margin-bottom:0.7rem;">
+            <div class="row">
+                <div class="avatar">{{ post.author.username|first|upper }}</div>
+                <div>
+                    <strong>{{ post.author.username }}</strong>
+                    <div class="muted small">{{ post.created_at|date:"M d, Y" }}</div>
+                </div>
+            </div>
+            {% if user.is_authenticated and user != post.author %}
+            <a class="btn secondary" href="{% url 'toggle_follow' post.author.username %}" style="padding:0.4rem 0.8rem; font-size:0.85rem;">{% if post.author in user.following.all %}Unfollow{% else %}Follow{% endif %}</a>
+            {% endif %}
+        </div>
+        <p><a href="{% url 'post_detail' post.id %}" style="color:inherit; text-decoration:none;">{{ post.content }}</a></p>
+        {% if post.image %}<img class="post-image" src="{{ post.image.url }}" alt="post">{% endif %}
+        <p class="muted">{{ post.like_count }} likes · {{ post.comment_count }} comments</p>
+        {% if user.is_authenticated %}
+        <div class="row" style="margin-top:0.7rem;">
+            <a class="btn secondary" href="{% url 'toggle_like' post.id %}">{% if post.user_has_liked %}Unlike{% else %}Like{% endif %}</a>
+            <a class="btn secondary" href="#comment-form-{{ post.id }}">Comment</a>
+        </div>
+        {% endif %}
+        <div style="margin-top:0.7rem;">
+            {% for comment in post.comments.all %}
+            <div style="padding:0.6rem 0; border-top:1px solid #f1f5f9;">
+                <strong>{{ comment.author.username }}</strong>
+                <div class="muted small">{{ comment.content }}</div>
+            </div>
+            {% empty %}
+            <p class="muted">No comments yet.</p>
+            {% endfor %}
+        </div>
+        {% if user.is_authenticated %}
+        <form id="comment-form-{{ post.id }}" method="post" action="{% url 'create_comment' post.id %}" style="margin-top:0.7rem;">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <button class="btn" type="submit">Comment</button>
+        </form>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="card">No posts yet.</div>
+    {% endfor %}
+</div>
+{% endblock %}
